@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activation Dashboard System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-custom {
+            background-color: var(--primary-color);
+        }
+        
+        .sidebar {
+            background-color: var(--dark-color);
+            color: white;
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px 20px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--secondary-color);
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card-custom {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header-custom {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .table-custom th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background-color: #e9f7fe;
+        }
+        
+        .file-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .file-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .btn-primary-custom {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary-custom:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .dashboard-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary-color), #1a5276);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .progress-custom {
+            height: 10px;
+            margin-top: 10px;
+        }
+        
+        .note-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .sub-cluster-filter {
+            margin-bottom: 15px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .notification-error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .table-detail th {
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .table-detail td {
+            vertical-align: middle;
+        }
+        
+        /* New styles for improved Activation Detail */
+        .summary-cards {
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .summary-card.sgs {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .summary-card.sds {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .summary-card.retail {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .summary-card.total {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .detail-section h5 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .customer-mdn {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-detail thead th {
+            font-weight: 600;
+        }
+        
+        .table-detail tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        
+        .badge-count {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .export-btn {
+            margin-left: 10px;
+        }
+        
+        /* New styles for parallel layout */
+        .parallel-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .parallel-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .parallel-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .parallel-body {
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .parallel-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .parallel-table th {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
+        }
+        
+        .parallel-table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .parallel-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .parallel-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .sgs-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .sds-header {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .retail-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        /* Styles for popup modal */
+        .total-link {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        
+        .total-link:hover {
+            color: #0056b3;
+        }
+        
+        .mdn-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .mdn-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+        }
+        
+        .mdn-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-detail {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .user-detail strong {
+            display: inline-block;
+            width: 180px;
+        }
+
+        /* Styles for change password page */
+        .password-form-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 2px;
+        }
+
+        .password-weak {
+            background-color: #dc3545;
+            width: 33%;
+        }
+
+        .password-medium {
+            background-color: #ffc107;
+            width: 66%;
+        }
+
+        .password-strong {
+            background-color: #28a745;
+            width: 100%;
+        }
+
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .parallel-layout {
+                flex-direction: column;
+            }
+            
+            .parallel-section {
+                min-width: 100%;
+            }
+        }
+        
+        /* Connection status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        
+        .connection-online {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .connection-offline {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status -->
+    <div id="connection-status" class="connection-status d-none">
+        <i class="fas fa-wifi me-1"></i> <span id="connection-text">Online</span>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="container-fluid">
+        <div class="login-container">
+            <h2 class="text-center mb-4">Admin Login</h2>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 btn-primary-custom">
+                    <span id="login-text">Login</span>
+                    <span id="login-spinner" class="loading-spinner d-none"></span>
+                </button>
+            </form>
+            <div class="mt-3 text-center">
+                <small class="text-muted">Demo Accounts: admin/1234, user/view</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden Initially) -->
+    <div id="app" class="d-none">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Activation Dashboard System
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i> <span id="user-name">Admin</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" data-page="change-password"><i class="fas fa-key me-2"></i>Ubah Password</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li>
+                                <a href="#" class="nav-link active" data-page="dashboard">
+                                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="nav-link" data-page="activation-detail">
+                                    <i class="fas fa-list me-2"></i> Activation Detail
+                                </a>
+                            </li>
+                            <li id="admin-upload-link" class="d-none">
+                                <a href="#" class="nav-link" data-page="upload">
+                                    <i class="fas fa-upload me-2"></i> Upload Data
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="nav-link" data-page="change-password">
+                                    <i class="fas fa-key me-2"></i> Ubah Password
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="nav-link" id="logout-sidebar-btn">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 main-content">
+                    <!-- Dashboard Section -->
+                    <div id="dashboard" class="page-section active">
+                        <h1 class="dashboard-title">Activation Real Time VIVA CLUSTER 1 - WEST JAVA</h1>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-label">TOTAL TARGET</div>
+                                    <div class="stat-value" id="total-target">2,713</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-label">TOTAL ACTIVATION</div>
+                                    <div class="stat-value" id="total-activation">509</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-label">ACHIEVEMENT</div>
+                                    <div class="stat-value" id="achievement">18.76%</div>
+                                    <div class="progress progress-custom">
+                                        <div class="progress-bar" role="progressbar" id="achievement-bar" style="width: 18.76%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <div class="stat-label">SGS ACTIVATION</div>
+                                    <div class="stat-value" id="sgs-activation">227</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card card-custom">
+                            <div class="card-header card-header-custom">
+                                <h5 class="mb-0">Dashboard ASC</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-custom" id="asc-table">
+                                        <thead>
+                                            <tr>
+                                                <th>CLUSTER</th>
+                                                <th>ASC</th>
+                                                <th>TARGET</th>
+                                                <th>SGS</th>
+                                                <th>SDS</th>
+                                                <th>RETAIL</th>
+                                                <th>TOTAL</th>
+                                                <th>AGH%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="asc-table-body">
+                                            <!-- Data akan diisi oleh JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="note-box">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <strong>Note:</strong> Segera follow-up Team (SGS/SDS/Retail dengan nilai 0).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activation Detail Section -->
+                    <div id="activation-detail" class="page-section">
+                        <h1 class="dashboard-title">Activation Detail</h1>
+                        
+                        <!-- Summary Cards -->
+                        <div class="row summary-cards">
+                            <div class="col-md-3">
+                                <div class="summary-card sgs">
+                                    <div class="summary-label">TOTAL SGS</div>
+                                    <div class="summary-value" id="summary-sgs">0</div>
+                                    <div class="summary-label">Customer MDN</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-card sds">
+                                    <div class="summary-label">TOTAL SDS</div>
+                                    <div class="summary-value" id="summary-sds">0</div>
+                                    <div class="summary-label">Customer MDN</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-card retail">
+                                    <div class="summary-label">TOTAL RETAIL</div>
+                                    <div class="summary-value" id="summary-retail">0</div>
+                                    <div class="summary-label">Customer MDN</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="summary-card total">
+                                    <div class="summary-label">TOTAL ALL</div>
+                                    <div class="summary-value" id="summary-total">0</div>
+                                    <div class="summary-label">Customer MDN</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card card-custom">
+                            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Activation Detail</h5>
+                                <button class="btn btn-sm btn-light export-btn" id="export-detail-btn">
+                                    <i class="fas fa-download me-1"></i> Export
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="filter-section">
+                                    <h6>Filter:</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="sub-cluster-filter" class="form-label">AI SUB CLUSTER</label>
+                                            <select class="form-select" id="sub-cluster-filter">
+                                                <option value="all" selected>Semua Sub Cluster</option>
+                                                <!-- Options akan diisi oleh JavaScript -->
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="category-filter" class="form-label">Kategori</label>
+                                            <select class="form-select" id="category-filter">
+                                                <option value="all" selected>Semua Kategori</option>
+                                                <option value="sgs">SGS</option>
+                                                <option value="sds">SDS</option>
+                                                <option value="retail">Retail</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="search-filter" class="form-label">Cari (Nama/NIK)</label>
+                                            <input type="text" class="form-control" id="search-filter" placeholder="Masukkan nama atau NIK...">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Parallel Layout for SGS, SDS, and Retail -->
+                                <div class="parallel-layout">
+                                    <!-- SGS Section -->
+                                    <div class="parallel-section">
+                                        <div class="parallel-header sgs-header">
+                                            <i class="fas fa-user-tie me-2"></i> SGS Activation
+                                        </div>
+                                        <div class="parallel-body">
+                                            <table class="parallel-table" id="sgs-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>SUB CLUSTER</th>
+                                                        <th>NIK</th>
+                                                        <th>NAMA</th>
+                                                        <th>TOTAL</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="sgs-detail-body">
+                                                    <!-- Data akan diisi oleh JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- SDS Section -->
+                                    <div class="parallel-section">
+                                        <div class="parallel-header sds-header">
+                                            <i class="fas fa-user-friends me-2"></i> SDS Activation
+                                        </div>
+                                        <div class="parallel-body">
+                                            <table class="parallel-table" id="sds-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>SUB CLUSTER</th>
+                                                        <th>NIK</th>
+                                                        <th>NAMA</th>
+                                                        <th>TOTAL</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="sds-detail-body">
+                                                    <!-- Data akan diisi oleh JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Retail Section -->
+                                    <div class="parallel-section">
+                                        <div class="parallel-header retail-header">
+                                            <i class="fas fa-store me-2"></i> Retail Activation
+                                        </div>
+                                        <div class="parallel-body">
+                                            <table class="parallel-table" id="retail-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>SUB CLUSTER</th>
+                                                        <th>NIK</th>
+                                                        <th>NAMA</th>
+                                                        <th>TOTAL</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="retail-detail-body">
+                                                    <!-- Data akan diisi oleh JavaScript -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Section (Only for Admin) -->
+                    <div id="upload" class="page-section">
+                        <h1 class="dashboard-title">Upload Excel Data</h1>
+                        
+                        <div class="card card-custom">
+                            <div class="card-header card-header-custom">
+                                <h5 class="mb-0">Upload File</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="upload-area" id="drop-zone">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-muted"></i>
+                                    <h5>Seret file Excel ke sini atau klik untuk mengunggah</h5>
+                                    <p class="text-muted">Format yang didukung: .xlsx, .xls</p>
+                                    <input type="file" id="file-upload" class="d-none" accept=".xlsx,.xls">
+                                    <button class="btn btn-primary btn-primary-custom mt-3" id="upload-trigger">
+                                        <i class="fas fa-upload me-2"></i> Upload Excel Raw ACT
+                                    </button>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h5>File Tersimpan di Cloud</h5>
+                                    <ul class="file-list" id="file-list">
+                                        <!-- File list akan diisi oleh JavaScript -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Password Section -->
+                    <div id="change-password" class="page-section">
+                        <h1 class="dashboard-title">Ubah Password</h1>
+                        
+                        <div class="card card-custom">
+                            <div class="card-header card-header-custom">
+                                <h5 class="mb-0">Form Ubah Password</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="password-form-container">
+                                    <form id="change-password-form">
+                                        <div class="mb-3">
+                                            <label for="current-password" class="form-label">Password Saat Ini</label>
+                                            <input type="password" class="form-control" id="current-password" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="new-password" class="form-label">Password Baru</label>
+                                            <input type="password" class="form-control" id="new-password" required>
+                                            <div class="password-strength" id="password-strength"></div>
+                                            <div class="password-requirements">
+                                                <small>Password harus mengandung minimal 8 karakter, termasuk huruf besar, huruf kecil, angka, dan simbol.</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="confirm-password" class="form-label">Konfirmasi Password Baru</label>
+                                            <input type="password" class="form-control" id="confirm-password" required>
+                                            <div class="invalid-feedback" id="confirm-password-feedback">
+                                                Konfirmasi password tidak sesuai.
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary btn-primary-custom">
+                                                <i class="fas fa-save me-2"></i> Simpan Password Baru
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for SGS/SDS Customer MDN -->
+    <div class="modal fade" id="mdnModal" tabindex="-1" aria-labelledby="mdnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mdnModalLabel">Detail Customer MDN</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-info mb-3">
+                        <h6>Informasi User</h6>
+                        <div><strong>Sub Cluster:</strong> <span id="modal-sub-cluster"></span></div>
+                        <div><strong>NIK:</strong> <span id="modal-nik"></span></div>
+                        <div><strong>Nama:</strong> <span id="modal-nama"></span></div>
+                        <div><strong>Total Aktivasi:</strong> <span id="modal-total"></span></div>
+                    </div>
+                    <h6>Daftar Customer MDN</h6>
+                    <div class="mdn-list" id="mdn-list">
+                        <!-- MDN list will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Retail Details -->
+    <div class="modal fade" id="retailModal" tabindex="-1" aria-labelledby="retailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="retailModalLabel">Detail Retail Activation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-info mb-3">
+                        <h6>Informasi User</h6>
+                        <div><strong>Sub Cluster:</strong> <span id="retail-modal-sub-cluster"></span></div>
+                        <div><strong>NIK:</strong> <span id="retail-modal-nik"></span></div>
+                        <div><strong>Nama:</strong> <span id="retail-modal-nama"></span></div>
+                        <div><strong>Total Aktivasi:</strong> <span id="retail-modal-total"></span></div>
+                    </div>
+                    <div class="user-detail">
+                        <div><strong>PERFORMED USER LOGIN ID:</strong> <span id="retail-performed-login-id"></span></div>
+                        <div><strong>PERFORMED USER NAME:</strong> <span id="retail-performed-user-name"></span></div>
+                    </div>
+                    <h6>Daftar Customer MDN</h6>
+                    <div class="mdn-list" id="retail-mdn-list">
+                        <!-- MDN list will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Base URL - Sesuaikan dengan URL Netlify Functions Anda
+        const API_BASE_URL = '/.netlify/functions';
+        
+        // Backend Simulation - Using localStorage for data persistence
+        const STORAGE_KEYS = {
+            DASHBOARD_DATA: 'activation_dashboard_data',
+            ACTIVATION_DETAIL: 'activation_detail_data',
+            UPLOADED_FILES: 'uploaded_files_data',
+            USER_ACCOUNTS: 'user_accounts_data'
+        };
+
+        // Initialize data if not exists
+        function initializeStorage() {
+            if (!localStorage.getItem(STORAGE_KEYS.USER_ACCOUNTS)) {
+                const defaultUsers = {
+                    'admin': { password: '1234', role: 'admin' },
+                    'user': { password: 'view', role: 'user' }
+                };
+                localStorage.setItem(STORAGE_KEYS.USER_ACCOUNTS, JSON.stringify(defaultUsers));
+            }
+            
+            if (!localStorage.getItem(STORAGE_KEYS.DASHBOARD_DATA)) {
+                const defaultDashboardData = [
+                    { cluster: '1.3', asc: 'DHORA ABSIANITY PERMATA', target: 430, sgs: 9, sds: 37, retail: 2, total: 48, agh: '11.16%' },
+                    { cluster: '1.4', asc: 'MUHAMMAD YAZID ULWAN', target: 370, sgs: 75, sds: 22, retail: 1, total: 98, agh: '26.49%' },
+                    { cluster: '2.1', asc: 'Y.B. PURWANTO NUOROHO', target: 320, sgs: 37, sds: 17, retail: 0, total: 54, agh: '16.88%' },
+                    { cluster: '2.2', asc: 'DONNI KURNIAWAN', target: 500, sgs: 46, sds: 36, retail: 0, total: 82, agh: '16.40%' },
+                    { cluster: '2.3', asc: 'EDY SUMARNO', target: 350, sgs: 11, sds: 9, retail: 2, total: 22, agh: '6.29%' },
+                    { cluster: '3.3', asc: 'BRAINY BRILLIANT', target: 270, sgs: 23, sds: 59, retail: 2, total: 84, agh: '31.11%' },
+                    { cluster: '7.1', asc: 'HERIYANTO', target: 113, sgs: 6, sds: 26, retail: 3, total: 35, agh: '30.97%' },
+                    { cluster: '7.2', asc: 'MUHAMMAD LUTHFI', target: 60, sgs: 6, sds: 19, retail: 0, total: 25, agh: '41.67%' },
+                    { cluster: '8.1', asc: 'JERRY SOKHA', target: 150, sgs: 13, sds: 25, retail: 0, total: 38, agh: '25.33%' },
+                    { cluster: '8.4', asc: 'MH VARGA FRYWENDA', target: 150, sgs: 1, sds: 22, retail: 0, total: 23, agh: '15.33%' }
+                ];
+                localStorage.setItem(STORAGE_KEYS.DASHBOARD_DATA, JSON.stringify(defaultDashboardData));
+            }
+            
+            if (!localStorage.getItem(STORAGE_KEYS.ACTIVATION_DETAIL)) {
+                const defaultActivationDetail = {
+                    sgs: [
+                        { subCluster: '1.3', nik: '31418976', nama: 'IRMA ESTIANA', customerMdn: ['081234567890', '081234567891', '081234567892', '081234567893', '081234567894', '081234567895'], total: 6 },
+                        { subCluster: '1.3', nik: '32205478', nama: 'WILLY AGUS HERMAWAN', customerMdn: ['081234567896'], total: 1 },
+                        { subCluster: '1.3', nik: '32208575', nama: 'NURVINA ROHIMA', customerMdn: ['081234567897', '081234567898'], total: 2 },
+                        { subCluster: '1.4', nik: '30502159', nama: 'ELASARI', customerMdn: ['081234567899', '081234567900', '081234567901', '081234567902', '081234567903', '081234567904', '081234567905', '081234567906', '081234567907', '081234567908', '081234567909'], total: 11 },
+                        { subCluster: '1.4', nik: '31419760', nama: 'UNKNOWN', customerMdn: ['081234567910', '081234567911', '081234567912', '081234567913', '081234567914'], total: 5 },
+                        { subCluster: '1.4', nik: '32204431', nama: 'MUHAMMAD ARIEF B.', customerMdn: ['081234567915', '081234567916'], total: 2 },
+                        { subCluster: '1.4', nik: '32614480', nama: 'LISMAYA', customerMdn: ['081234567917', '081234567918', '081234567919', '081234567920', '081234567921', '081234567922', '081234567923', '081234567924', '081234567925', '081234567926', '081234567927', '081234567928', '081234567929', '081234567930', '081234567931'], total: 15 },
+                        { subCluster: '1.4', nik: '32617159', nama: 'FITRI NURYAN', customerMdn: Array.from({length: 36}, (_, i) => `0812345${(567932 + i).toString().padStart(6, '0')}`), total: 36 }
+                    ],
+                    sds: [
+                        { subCluster: '1.3', nik: '31419176', nama: 'ANNISA SRWATI', customerMdn: ['081235567890', '081235567891', '081235567892', '081235567893', '081235567894'], total: 5 },
+                        { subCluster: '1.3', nik: '31420111', nama: 'HENDY KURNAWAN', customerMdn: Array.from({length: 10}, (_, i) => `0812355${(567895 + i).toString().padStart(6, '0')}`), total: 10 },
+                        { subCluster: '1.3', nik: '31420424', nama: 'JULIA ALWI', customerMdn: ['081235567905', '081235567906', '081235567907', '081235567908'], total: 4 },
+                        { subCluster: '1.3', nik: '33015143', nama: 'MUHAMMAD ALWI MUHAZIR', customerMdn: ['081235567909'], total: 1 },
+                        { subCluster: '1.3', nik: '33202144', nama: 'ASEP GURAWAN', customerMdn: Array.from({length: 7}, (_, i) => `0812355${(567910 + i).toString().padStart(6, '0')}`), total: 7 },
+                        { subCluster: '1.3', nik: '33202407', nama: 'NUR DINI AMELIA', customerMdn: ['081235567917', '081235567918', '081235567919', '081235567920', '081235567921'], total: 5 },
+                        { subCluster: '1.3', nik: '33202495', nama: 'RAHMAT HIDAYAT', customerMdn: ['081235567922', '081235567923', '081235567924', '081235567925', '081235567926'], total: 5 },
+                        { subCluster: '1.3', nik: '33202495', nama: 'RENA NOVIANTI', customerMdn: Array.from({length: 10}, (_, i) => `0812355${(567927 + i).toString().padStart(6, '0')}`), total: 10 }
+                    ],
+                    retail: [
+                        { 
+                            subCluster: '1.3', 
+                            nik: '12345678', 
+                            nama: 'BISMA ADI PAMUNGKAS', 
+                            customerMdn: ['081236567890', '081236567891'], 
+                            performedUserLoginId: 'BISMA123',
+                            performedUserName: 'BISMA ADI PAMUNGKAS',
+                            total: 2 
+                        },
+                        { 
+                            subCluster: '1.4', 
+                            nik: '87654321', 
+                            nama: 'RIZAL RAHMAN', 
+                            customerMdn: ['081236567892'], 
+                            performedUserLoginId: 'RIZAL876',
+                            performedUserName: 'RIZAL RAHMAN',
+                            total: 1 
+                        },
+                        { 
+                            subCluster: '2.3', 
+                            nik: '11223344', 
+                            nama: 'ERLAN OHANAJAR', 
+                            customerMdn: ['081236567893', '081236567894'], 
+                            performedUserLoginId: 'ERLAN112',
+                            performedUserName: 'ERLAN OHANAJAR',
+                            total: 2 
+                        },
+                        { 
+                            subCluster: '3.3', 
+                            nik: '44332211', 
+                            nama: 'ANDRE MUHAMAD INDRAWAN', 
+                            customerMdn: ['081236567895'], 
+                            performedUserLoginId: 'ANDRE443',
+                            performedUserName: 'ANDRE MUHAMAD INDRAWAN',
+                            total: 1 
+                        },
+                        { 
+                            subCluster: '3.3', 
+                            nik: '55667788', 
+                            nama: 'YOPI AQUSTIANTO', 
+                            customerMdn: ['081236567896'], 
+                            performedUserLoginId: 'YOPI556',
+                            performedUserName: 'YOPI AQUSTIANTO',
+                            total: 1 
+                        },
+                        { 
+                            subCluster: '7.1', 
+                            nik: '99887766', 
+                            nama: 'DEKKY OKTANA', 
+                            customerMdn: ['081236567897', '081236567898'], 
+                            performedUserLoginId: 'DEKKY998',
+                            performedUserName: 'DEKKY OKTANA',
+                            total: 2 
+                        },
+                        { 
+                            subCluster: '7.1', 
+                            nik: '66554433', 
+                            nama: 'JAKA NUORAHA', 
+                            customerMdn: ['081236567899'], 
+                            performedUserLoginId: 'JAKA665',
+                            performedUserName: 'JAKA NUORAHA',
+                            total: 1 
+                        }
+                    ]
+                };
+                localStorage.setItem(STORAGE_KEYS.ACTIVATION_DETAIL, JSON.stringify(defaultActivationDetail));
+            }
+            
+            if (!localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES)) {
+                localStorage.setItem(STORAGE_KEYS.UPLOADED_FILES, JSON.stringify([]));
+            }
+        }
+
+        // Cloud Storage API Functions
+        const CloudStorage = {
+            // Upload file to cloud storage
+            async uploadFile(file, data) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/upload-file`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            data: data,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to upload file to cloud');
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error uploading to cloud:', error);
+                    // Fallback to localStorage
+                    return this.saveToLocalStorage(file, data);
+                }
+            },
+            
+            // Get all uploaded files from cloud
+            async getFiles() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get-files`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch files from cloud');
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching from cloud:', error);
+                    // Fallback to localStorage
+                    return this.getFromLocalStorage();
+                }
+            },
+            
+            // Load specific file data from cloud
+            async loadFile(filename) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get-file`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ filename })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load file from cloud');
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error loading from cloud:', error);
+                    // Fallback to localStorage
+                    return this.loadFromLocalStorage(filename);
+                }
+            },
+            
+            // Delete file from cloud
+            async deleteFile(filename) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/delete-file`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ filename })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to delete file from cloud');
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error deleting from cloud:', error);
+                    // Fallback to localStorage
+                    return this.deleteFromLocalStorage(filename);
+                }
+            },
+            
+            // Save dashboard data to cloud
+            async saveDashboardData(data) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/save-dashboard`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            data: data,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to save dashboard data to cloud');
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error saving dashboard to cloud:', error);
+                    // Fallback to localStorage
+                    localStorage.setItem(STORAGE_KEYS.DASHBOARD_DATA, JSON.stringify(data));
+                    return { success: true, source: 'local' };
+                }
+            },
+            
+            // Load dashboard data from cloud
+            async loadDashboardData() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get-dashboard`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load dashboard data from cloud');
+                    }
+                    
+                    const result = await response.json();
+                    return result.data || [];
+                } catch (error) {
+                    console.error('Error loading dashboard from cloud:', error);
+                    // Fallback to localStorage
+                    return JSON.parse(localStorage.getItem(STORAGE_KEYS.DASHBOARD_DATA) || '[]');
+                }
+            },
+            
+            // Local storage fallback methods
+            saveToLocalStorage(file, data) {
+                const uploadedFiles = JSON.parse(localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES) || '[]');
+                const fileData = {
+                    name: file.name,
+                    date: new Date().toLocaleDateString('id-ID') + ', ' + new Date().toLocaleTimeString('id-ID'),
+                    data: data,
+                    timestamp: new Date().toISOString()
+                };
+                
+                uploadedFiles.push(fileData);
+                localStorage.setItem(STORAGE_KEYS.UPLOADED_FILES, JSON.stringify(uploadedFiles));
+                
+                return { success: true, source: 'local', file: fileData };
+            },
+            
+            getFromLocalStorage() {
+                return JSON.parse(localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES) || '[]');
+            },
+            
+            loadFromLocalStorage(filename) {
+                const uploadedFiles = JSON.parse(localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES) || '[]');
+                const file = uploadedFiles.find(f => f.name === filename);
+                return file ? file.data : null;
+            },
+            
+            deleteFromLocalStorage(filename) {
+                const uploadedFiles = JSON.parse(localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES) || '[]');
+                const filteredFiles = uploadedFiles.filter(f => f.name !== filename);
+                localStorage.setItem(STORAGE_KEYS.UPLOADED_FILES, JSON.stringify(filteredFiles));
+                return { success: true, source: 'local' };
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize data storage
+            initializeStorage();
+            
+            // Elements
+            const loginPage = document.getElementById('login-page');
+            const app = document.getElementById('app');
+            const loginForm = document.getElementById('login-form');
+            const pageSections = document.querySelectorAll('.page-section');
+            const sidebarLinks = document.querySelectorAll('.sidebar a[data-page]');
+            const adminUploadLink = document.getElementById('admin-upload-link');
+            const logoutBtn = document.getElementById('logout-btn');
+            const logoutSidebarBtn = document.getElementById('logout-sidebar-btn');
+            const uploadTrigger = document.getElementById('upload-trigger');
+            const fileUpload = document.getElementById('file-upload');
+            const dropZone = document.getElementById('drop-zone');
+            const userName = document.getElementById('user-name');
+            const subClusterFilter = document.getElementById('sub-cluster-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const searchFilter = document.getElementById('search-filter');
+            const exportDetailBtn = document.getElementById('export-detail-btn');
+            const changePasswordForm = document.getElementById('change-password-form');
+            const newPasswordInput = document.getElementById('new-password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            const passwordStrength = document.getElementById('password-strength');
+            const connectionStatus = document.getElementById('connection-status');
+            const connectionText = document.getElementById('connection-text');
+            
+            // Modal elements
+            const mdnModal = new bootstrap.Modal(document.getElementById('mdnModal'));
+            const retailModal = new bootstrap.Modal(document.getElementById('retailModal'));
+            
+            // Data storage
+            let dashboardData = [];
+            let activationDetailData = {
+                sgs: [],
+                sds: [],
+                retail: []
+            };
+            let uploadedFiles = [];
+            let allSubClusters = [];
+            
+            // User data storage
+            let userAccounts = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_ACCOUNTS) || '{}');
+            
+            let currentUser = null;
+            let isOnline = true;
+
+            // Check connection status
+            function updateConnectionStatus() {
+                isOnline = navigator.onLine;
+                if (isOnline) {
+                    connectionStatus.className = 'connection-status connection-online';
+                    connectionText.textContent = 'Online';
+                    connectionStatus.classList.remove('d-none');
+                } else {
+                    connectionStatus.className = 'connection-status connection-offline';
+                    connectionText.textContent = 'Offline';
+                    connectionStatus.classList.remove('d-none');
+                }
+                
+                // Auto hide after 3 seconds if online
+                if (isOnline) {
+                    setTimeout(() => {
+                        connectionStatus.classList.add('d-none');
+                    }, 3000);
+                }
+            }
+
+            // Initialize connection status
+            updateConnectionStatus();
+            window.addEventListener('online', updateConnectionStatus);
+            window.addEventListener('offline', updateConnectionStatus);
+            
+            // Initialize application
+            initializeApplication();
+            
+            async function initializeApplication() {
+                // Load data from cloud
+                await loadDataFromCloud();
+                
+                // Calculate totals
+                updateDashboardTotals();
+                
+                // Render data
+                renderDashboardTable();
+                renderActivationDetailTable();
+                populateSubClusterFilter();
+                updateSummaryCards();
+                
+                // Render uploaded files list
+                await renderUploadedFiles();
+            }
+            
+            async function loadDataFromCloud() {
+                try {
+                    // Load dashboard data from cloud
+                    dashboardData = await CloudStorage.loadDashboardData();
+                    
+                    // Load activation detail from localStorage (fallback)
+                    activationDetailData = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVATION_DETAIL) || '{"sgs":[],"sds":[],"retail":[]}');
+                    
+                    // Load uploaded files from cloud
+                    uploadedFiles = await CloudStorage.getFiles();
+                    
+                    showNotification('Data berhasil dimuat dari cloud', 'success');
+                } catch (error) {
+                    console.error('Error loading data from cloud:', error);
+                    // Fallback to localStorage
+                    dashboardData = JSON.parse(localStorage.getItem(STORAGE_KEYS.DASHBOARD_DATA) || '[]');
+                    activationDetailData = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVATION_DETAIL) || '{"sgs":[],"sds":[],"retail":[]}');
+                    uploadedFiles = JSON.parse(localStorage.getItem(STORAGE_KEYS.UPLOADED_FILES) || '[]');
+                    
+                    showNotification('Menggunakan data lokal (offline mode)', 'error');
+                }
+            }
+            
+            // Login functionality
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Show loading state
+                const loginText = document.getElementById('login-text');
+                const loginSpinner = document.getElementById('login-spinner');
+                loginText.classList.add('d-none');
+                loginSpinner.classList.remove('d-none');
+                
+                // Simulate network delay
+                setTimeout(() => {
+                    // Authentication
+                    if (userAccounts[username] && userAccounts[username].password === password) {
+                        currentUser = username;
+                        
+                        loginPage.classList.add('d-none');
+                        app.classList.remove('d-none');
+                        
+                        if (userAccounts[username].role === 'admin') {
+                            adminUploadLink.classList.remove('d-none');
+                            userName.textContent = 'Admin';
+                        } else {
+                            adminUploadLink.classList.add('d-none');
+                            userName.textContent = 'User View Only';
+                        }
+                        
+                        // Hide loading state
+                        loginText.classList.remove('d-none');
+                        loginSpinner.classList.add('d-none');
+                    } else {
+                        alert('Username atau password salah.');
+                        // Hide loading state
+                        loginText.classList.remove('d-none');
+                        loginSpinner.classList.add('d-none');
+                    }
+                }, 1000);
+            });
+            
+            // Navigation
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active state
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show selected page
+                    const pageId = this.getAttribute('data-page');
+                    pageSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.getElementById(pageId).classList.add('active');
+                });
+            });
+            
+            // File upload
+            uploadTrigger.addEventListener('click', function() {
+                fileUpload.click();
+            });
+            
+            fileUpload.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    processExcelFile(file);
+                }
+            });
+            
+            // Drag and drop functionality
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--secondary-color)';
+                this.style.backgroundColor = '#e9f7fe';
+            });
+            
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#ccc';
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#ccc';
+                this.style.backgroundColor = '#f8f9fa';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.name.match(/\.(xlsx|xls)$/)) {
+                        processExcelFile(file);
+                    } else {
+                        showNotification('Hanya file Excel (.xlsx, .xls) yang didukung', 'error');
+                    }
+                }
+            });
+            
+            // Filter functionality
+            subClusterFilter.addEventListener('change', function() {
+                filterActivationDetail();
+            });
+            
+            categoryFilter.addEventListener('change', function() {
+                filterActivationDetail();
+            });
+            
+            searchFilter.addEventListener('input', function() {
+                filterActivationDetail();
+            });
+            
+            // Export functionality
+            exportDetailBtn.addEventListener('click', function() {
+                exportActivationDetail();
+            });
+            
+            // Password strength indicator
+            newPasswordInput.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+            });
+            
+            // Confirm password validation
+            confirmPasswordInput.addEventListener('input', function() {
+                validatePasswordConfirmation();
+            });
+            
+            // Change password form submission
+            changePasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (!validatePasswordChange(currentPassword, newPassword, confirmPassword)) {
+                    return;
+                }
+                
+                // Update password
+                userAccounts[currentUser].password = newPassword;
+                localStorage.setItem(STORAGE_KEYS.USER_ACCOUNTS, JSON.stringify(userAccounts));
+                
+                // Show success message
+                showNotification('Password berhasil diubah!', 'success');
+                
+                // Reset form
+                changePasswordForm.reset();
+                passwordStrength.className = 'password-strength';
+            });
+            
+            // Logout functionality
+            function logout() {
+                app.classList.add('d-none');
+                loginPage.classList.remove('d-none');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                currentUser = null;
+                
+                // Reset to dashboard
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                document.querySelector('.sidebar a[data-page="dashboard"]').classList.add('active');
+                pageSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById('dashboard').classList.add('active');
+            }
+            
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            logoutSidebarBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Check password strength
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                
+                // Length check
+                if (password.length >= 8) strength++;
+                
+                // Contains lowercase
+                if (/[a-z]/.test(password)) strength++;
+                
+                // Contains uppercase
+                if (/[A-Z]/.test(password)) strength++;
+                
+                // Contains numbers
+                if (/[0-9]/.test(password)) strength++;
+                
+                // Contains special characters
+                if (/[^A-Za-z0-9]/.test(password)) strength++;
+                
+                // Update strength indicator
+                passwordStrength.className = 'password-strength';
+                
+                if (password.length === 0) {
+                    passwordStrength.className = 'password-strength';
+                } else if (strength <= 2) {
+                    passwordStrength.className = 'password-strength password-weak';
+                } else if (strength <= 4) {
+                    passwordStrength.className = 'password-strength password-medium';
+                } else {
+                    passwordStrength.className = 'password-strength password-strong';
+                }
+            }
+            
+            // Validate password confirmation
+            function validatePasswordConfirmation() {
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (confirmPassword && newPassword !== confirmPassword) {
+                    confirmPasswordInput.classList.add('is-invalid');
+                    return false;
+                } else {
+                    confirmPasswordInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            
+            // Validate password change
+            function validatePasswordChange(currentPassword, newPassword, confirmPassword) {
+                // Check current password
+                if (currentPassword !== userAccounts[currentUser].password) {
+                    showNotification('Password saat ini salah!', 'error');
+                    return false;
+                }
+                
+                // Check if new password meets requirements
+                if (newPassword.length < 8) {
+                    showNotification('Password baru harus minimal 8 karakter!', 'error');
+                    return false;
+                }
+                
+                if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(newPassword)) {
+                    showNotification('Password baru harus mengandung huruf besar, huruf kecil, angka, dan simbol!', 'error');
+                    return false;
+                }
+                
+                // Check password confirmation
+                if (newPassword !== confirmPassword) {
+                    showNotification('Konfirmasi password tidak sesuai!', 'error');
+                    return false;
+                }
+                
+                // Check if new password is same as current
+                if (newPassword === currentPassword) {
+                    showNotification('Password baru harus berbeda dengan password saat ini!', 'error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Update dashboard totals
+            function updateDashboardTotals() {
+                let totalTarget = 0;
+                let totalActivation = 0;
+                let totalSgs = 0;
+                let totalSds = 0;
+                let totalRetail = 0;
+                
+                dashboardData.forEach(item => {
+                    totalTarget += item.target;
+                    totalActivation += item.total;
+                    totalSgs += item.sgs;
+                    totalSds += item.sds;
+                    totalRetail += item.retail;
+                });
+                
+                const achievement = ((totalActivation / totalTarget) * 100).toFixed(2);
+                
+                document.getElementById('total-target').textContent = totalTarget.toLocaleString();
+                document.getElementById('total-activation').textContent = totalActivation.toLocaleString();
+                document.getElementById('achievement').textContent = achievement + '%';
+                document.getElementById('achievement-bar').style.width = achievement + '%';
+                document.getElementById('sgs-activation').textContent = totalSgs.toLocaleString();
+            }
+            
+            // Render dashboard table
+            function renderDashboardTable() {
+                const tbody = document.getElementById('asc-table-body');
+                tbody.innerHTML = '';
+                
+                dashboardData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.cluster}</td>
+                        <td>${item.asc}</td>
+                        <td>${item.target}</td>
+                        <td>${item.sgs}</td>
+                        <td>${item.sds}</td>
+                        <td>${item.retail}</td>
+                        <td>${item.total}</td>
+                        <td>${item.agh}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'table-secondary fw-bold';
+                
+                const totalTarget = dashboardData.reduce((sum, item) => sum + item.target, 0);
+                const totalSgs = dashboardData.reduce((sum, item) => sum + item.sgs, 0);
+                const totalSds = dashboardData.reduce((sum, item) => sum + item.sds, 0);
+                const totalRetail = dashboardData.reduce((sum, item) => sum + item.retail, 0);
+                const totalActivation = dashboardData.reduce((sum, item) => sum + item.total, 0);
+                const totalAchievement = ((totalActivation / totalTarget) * 100).toFixed(2);
+                
+                totalRow.innerHTML = `
+                    <td colspan="2">TOTAL</td>
+                    <td>${totalTarget.toLocaleString()}</td>
+                    <td>${totalSgs}</td>
+                    <td>${totalSds}</td>
+                    <td>${totalRetail}</td>
+                    <td>${totalActivation}</td>
+                    <td>${totalAchievement}%</td>
+                `;
+                tbody.appendChild(totalRow);
+            }
+            
+            // Update summary cards
+            function updateSummaryCards() {
+                const totalSgs = activationDetailData.sgs.reduce((sum, item) => sum + item.total, 0);
+                const totalSds = activationDetailData.sds.reduce((sum, item) => sum + item.total, 0);
+                const totalRetail = activationDetailData.retail.reduce((sum, item) => sum + item.total, 0);
+                const totalAll = totalSgs + totalSds + totalRetail;
+                
+                document.getElementById('summary-sgs').textContent = totalSgs.toLocaleString();
+                document.getElementById('summary-sds').textContent = totalSds.toLocaleString();
+                document.getElementById('summary-retail').textContent = totalRetail.toLocaleString();
+                document.getElementById('summary-total').textContent = totalAll.toLocaleString();
+            }
+            
+            // Render activation detail table
+            function renderActivationDetailTable() {
+                renderActivationDetailCategory('sgs');
+                renderActivationDetailCategory('sds');
+                renderActivationDetailCategory('retail');
+                updateSummaryCards();
+            }
+            
+            // Render activation detail for a specific category
+            function renderActivationDetailCategory(category) {
+                const tbody = document.getElementById(`${category}-detail-body`);
+                tbody.innerHTML = '';
+                
+                const data = activationDetailData[category];
+                
+                if (data.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="4" class="no-data">Tidak ada data ${category.toUpperCase()}</td>`;
+                    tbody.appendChild(row);
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${item.subCluster}</td>
+                        <td>${item.nik}</td>
+                        <td><strong>${item.nama}</strong></td>
+                        <td>
+                            <span class="total-link" data-category="${category}" data-sub-cluster="${item.subCluster}" data-nik="${item.nik}" data-nama="${item.nama}" data-total="${item.total}">
+                                ${item.total}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Add click event listeners to total links
+                tbody.querySelectorAll('.total-link').forEach(link => {
+                    link.addEventListener('click', function() {
+                        const category = this.getAttribute('data-category');
+                        const subCluster = this.getAttribute('data-sub-cluster');
+                        const nik = this.getAttribute('data-nik');
+                        const nama = this.getAttribute('data-nama');
+                        const total = this.getAttribute('data-total');
+                        
+                        if (category === 'sgs' || category === 'sds') {
+                            showMdnModal(category, subCluster, nik, nama, total);
+                        } else if (category === 'retail') {
+                            showRetailModal(subCluster, nik, nama, total);
+                        }
+                    });
+                });
+            }
+            
+            // Show MDN modal for SGS and SDS
+            function showMdnModal(category, subCluster, nik, nama, total) {
+                // Find the data
+                const data = activationDetailData[category].find(item => 
+                    item.subCluster === subCluster && item.nik === nik && item.nama === nama
+                );
+                
+                if (data) {
+                    // Update modal content
+                    document.getElementById('modal-sub-cluster').textContent = subCluster;
+                    document.getElementById('modal-nik').textContent = nik;
+                    document.getElementById('modal-nama').textContent = nama;
+                    document.getElementById('modal-total').textContent = total;
+                    
+                    // Populate MDN list
+                    const mdnList = document.getElementById('mdn-list');
+                    mdnList.innerHTML = '';
+                    
+                    if (data.customerMdn && data.customerMdn.length > 0) {
+                        data.customerMdn.forEach(mdn => {
+                            const mdnItem = document.createElement('div');
+                            mdnItem.className = 'mdn-item';
+                            mdnItem.textContent = mdn;
+                            mdnList.appendChild(mdnItem);
+                        });
+                    } else {
+                        mdnList.innerHTML = '<div class="text-muted">Tidak ada data Customer MDN</div>';
+                    }
+                    
+                    // Show modal
+                    mdnModal.show();
+                }
+            }
+            
+            // Show Retail modal
+            function showRetailModal(subCluster, nik, nama, total) {
+                // Find the data
+                const data = activationDetailData.retail.find(item => 
+                    item.subCluster === subCluster && item.nik === nik && item.nama === nama
+                );
+                
+                if (data) {
+                    // Update modal content
+                    document.getElementById('retail-modal-sub-cluster').textContent = subCluster;
+                    document.getElementById('retail-modal-nik').textContent = nik;
+                    document.getElementById('retail-modal-nama').textContent = nama;
+                    document.getElementById('retail-modal-total').textContent = total;
+                    
+                    // Update performed user details
+                    document.getElementById('retail-performed-login-id').textContent = data.performedUserLoginId || 'Tidak tersedia';
+                    document.getElementById('retail-performed-user-name').textContent = data.performedUserName || 'Tidak tersedia';
+                    
+                    // Populate MDN list
+                    const mdnList = document.getElementById('retail-mdn-list');
+                    mdnList.innerHTML = '';
+                    
+                    if (data.customerMdn && data.customerMdn.length > 0) {
+                        data.customerMdn.forEach(mdn => {
+                            const mdnItem = document.createElement('div');
+                            mdnItem.className = 'mdn-item';
+                            mdnItem.textContent = mdn;
+                            mdnList.appendChild(mdnItem);
+                        });
+                    } else {
+                        mdnList.innerHTML = '<div class="text-muted">Tidak ada data Customer MDN</div>';
+                    }
+                    
+                    // Show modal
+                    retailModal.show();
+                }
+            }
+            
+            // Populate sub cluster filter
+            function populateSubClusterFilter() {
+                // Collect all unique sub clusters from all data
+                const allSubClustersSet = new Set();
+                
+                // From dashboard data
+                dashboardData.forEach(item => {
+                    allSubClustersSet.add(item.cluster);
+                });
+                
+                // From activation detail data
+                Object.values(activationDetailData).forEach(category => {
+                    category.forEach(item => {
+                        if (item.subCluster) {
+                            allSubClustersSet.add(item.subCluster);
+                        }
+                    });
+                });
+                
+                allSubClusters = Array.from(allSubClustersSet).sort();
+                
+                const filter = document.getElementById('sub-cluster-filter');
+                // Clear existing options except the first one
+                while (filter.children.length > 1) {
+                    filter.removeChild(filter.lastChild);
+                }
+                
+                // Add sub cluster options
+                allSubClusters.forEach(cluster => {
+                    const option = document.createElement('option');
+                    option.value = cluster;
+                    option.textContent = cluster;
+                    filter.appendChild(option);
+                });
+            }
+            
+            // Filter activation detail
+            function filterActivationDetail() {
+                const subCluster = document.getElementById('sub-cluster-filter').value;
+                const category = document.getElementById('category-filter').value;
+                const searchTerm = document.getElementById('search-filter').value.toLowerCase();
+                
+                // Show/hide sections based on category filter
+                const sections = document.querySelectorAll('.parallel-section');
+                
+                if (category === 'all') {
+                    sections.forEach(section => section.style.display = 'block');
+                } else {
+                    sections.forEach(section => {
+                        const sectionType = section.querySelector('.parallel-header').textContent.toLowerCase();
+                        section.style.display = sectionType.includes(category) ? 'block' : 'none';
+                    });
+                }
+                
+                // Filter and render each category
+                ['sgs', 'sds', 'retail'].forEach(cat => {
+                    if (category === 'all' || category === cat) {
+                        const filteredData = activationDetailData[cat].filter(item => {
+                            const subClusterMatch = subCluster === 'all' || item.subCluster === subCluster;
+                            const searchMatch = !searchTerm || 
+                                item.nama.toLowerCase().includes(searchTerm) || 
+                                item.nik.toLowerCase().includes(searchTerm);
+                            
+                            return subClusterMatch && searchMatch;
+                        });
+                        
+                        renderFilteredActivationDetail(cat, filteredData);
+                    }
+                });
+            }
+            
+            // Render filtered activation detail
+            function renderFilteredActivationDetail(category, data) {
+                const tbody = document.getElementById(`${category}-detail-body`);
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="4" class="no-data">Tidak ada data ${category.toUpperCase()} yang sesuai dengan filter</td>`;
+                    tbody.appendChild(row);
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${item.subCluster}</td>
+                        <td>${item.nik}</td>
+                        <td><strong>${item.nama}</strong></td>
+                        <td>
+                            <span class="total-link" data-category="${category}" data-sub-cluster="${item.subCluster}" data-nik="${item.nik}" data-nama="${item.nama}" data-total="${item.total}">
+                                ${item.total}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Add click event listeners to total links
+                tbody.querySelectorAll('.total-link').forEach(link => {
+                    link.addEventListener('click', function() {
+                        const category = this.getAttribute('data-category');
+                        const subCluster = this.getAttribute('data-sub-cluster');
+                        const nik = this.getAttribute('data-nik');
+                        const nama = this.getAttribute('data-nama');
+                        const total = this.getAttribute('data-total');
+                        
+                        if (category === 'sgs' || category === 'sds') {
+                            showMdnModal(category, subCluster, nik, nama, total);
+                        } else if (category === 'retail') {
+                            showRetailModal(subCluster, nik, nama, total);
+                        }
+                    });
+                });
+            }
+            
+            // Export activation detail to Excel
+            function exportActivationDetail() {
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Create worksheets for each category
+                ['sgs', 'sds', 'retail'].forEach(category => {
+                    const data = activationDetailData[category];
+                    if (data.length > 0) {
+                        // Prepare data for export
+                        const exportData = data.map(item => ({
+                            'Sub Cluster': item.subCluster,
+                            'NIK': item.nik,
+                            'Nama': item.nama,
+                            'Customer MDN': item.customerMdn ? item.customerMdn.join(', ') : '',
+                            'Total': item.total
+                        }));
+                        
+                        const ws = XLSX.utils.json_to_sheet(exportData);
+                        XLSX.utils.book_append_sheet(wb, ws, category.toUpperCase());
+                    }
+                });
+                
+                // Generate and download file
+                const currentDate = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `Activation_Detail_${currentDate}.xlsx`);
+                showNotification('Data berhasil diekspor ke Excel', 'success');
+            }
+            
+            // Process uploaded Excel file
+            async function processExcelFile(file) {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Process the first sheet
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    // Process Excel data and update both dashboard and activation detail
+                    const processedData = processExcelData(jsonData);
+                    
+                    if (processedData) {
+                        try {
+                            // Upload to cloud storage
+                            const result = await CloudStorage.uploadFile(file, processedData);
+                            
+                            if (result.success) {
+                                // Show success notification
+                                showNotification(`1 file diunggah dan diproses ✅ (${result.source})`, 'success');
+                                
+                                // Add to file list
+                                await addToFileList(file.name, processedData, result.file);
+                                
+                                // Update dashboard with processed data
+                                updateDashboardFromExcel(processedData.dashboard);
+                                
+                                // Update activation detail with processed data
+                                updateActivationDetailFromExcel(processedData.activationDetail);
+                            } else {
+                                showNotification('Gagal mengunggah file ke cloud', 'error');
+                            }
+                        } catch (error) {
+                            console.error('Error uploading file:', error);
+                            showNotification('Error mengunggah file', 'error');
+                        }
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
+            }
+            
+            // Process Excel data to extract SGS, SDS, and Retail counts
+            function processExcelData(excelData) {
+                // Assuming the Excel structure has headers in the first row
+                const headers = excelData[0];
+                
+                // Find column indices for required fields
+                const subClusterCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('sub') && 
+                    h.toString().toLowerCase().includes('cluster')
+                );
+                
+                const userRoleCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('performed') && 
+                    h.toString().toLowerCase().includes('user') && 
+                    h.toString().toLowerCase().includes('role')
+                );
+                
+                // For SGS and SDS
+                const performedUserLoginIdCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('performed') && 
+                    h.toString().toLowerCase().includes('user') && 
+                    h.toString().toLowerCase().includes('login') &&
+                    h.toString().toLowerCase().includes('id')
+                );
+                
+                const performedUserNameCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('performed') && 
+                    h.toString().toLowerCase().includes('user') && 
+                    h.toString().toLowerCase().includes('name')
+                );
+                
+                // For Retail
+                const nikSfaCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('nik') && 
+                    h.toString().toLowerCase().includes('sfa')
+                );
+                
+                const namaSfaCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('nama') && 
+                    h.toString().toLowerCase().includes('sfa')
+                );
+                
+                // Customer MDN column
+                const customerMdnCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('customer') && 
+                         h.toString().toLowerCase().includes('mdn')) ||
+                    h.toString().toLowerCase().includes('msisdn') ||
+                    h.toString().toLowerCase().includes('phone')
+                );
+                
+                // If columns not found, try alternative column names
+                const alternativeSubClusterCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('sub_cluster') || 
+                         h.toString().toLowerCase().includes('subcluster'))
+                );
+                
+                const alternativeUserRoleCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('role') || 
+                         h.toString().toLowerCase().includes('user_role'))
+                );
+                
+                const alternativePerformedUserLoginIdCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('login') || 
+                         h.toString().toLowerCase().includes('user_id'))
+                );
+                
+                const alternativePerformedUserNameCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('user_name') || 
+                         h.toString().toLowerCase().includes('performer'))
+                );
+                
+                const alternativeNikSfaCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('nik')
+                );
+                
+                const alternativeNamaSfaCol = headers.findIndex(h => 
+                    h && h.toString().toLowerCase().includes('nama')
+                );
+                
+                const alternativeCustomerMdnCol = headers.findIndex(h => 
+                    h && (h.toString().toLowerCase().includes('no') && 
+                         h.toString().toLowerCase().includes('hp')) ||
+                    h.toString().toLowerCase().includes('telepon') ||
+                    h.toString().toLowerCase().includes('nomor')
+                );
+                
+                const finalSubClusterCol = subClusterCol !== -1 ? subClusterCol : alternativeSubClusterCol;
+                const finalUserRoleCol = userRoleCol !== -1 ? userRoleCol : alternativeUserRoleCol;
+                const finalPerformedUserLoginIdCol = performedUserLoginIdCol !== -1 ? performedUserLoginIdCol : alternativePerformedUserLoginIdCol;
+                const finalPerformedUserNameCol = performedUserNameCol !== -1 ? performedUserNameCol : alternativePerformedUserNameCol;
+                const finalNikSfaCol = nikSfaCol !== -1 ? nikSfaCol : alternativeNikSfaCol;
+                const finalNamaSfaCol = namaSfaCol !== -1 ? namaSfaCol : alternativeNamaSfaCol;
+                const finalCustomerMdnCol = customerMdnCol !== -1 ? customerMdnCol : alternativeCustomerMdnCol;
+                
+                if (finalSubClusterCol === -1 || finalUserRoleCol === -1) {
+                    showNotification('Format Excel tidak sesuai. Pastikan ada kolom Sub Cluster dan PERFORMED USER ROLE', 'error');
+                    return null;
+                }
+                
+                // Data structures for results
+                const dashboardData = {};
+                const activationDetailData = {
+                    sgs: [],
+                    sds: [],
+                    retail: []
+                };
+                
+                // Helper to group data by user
+                const userData = {
+                    sgs: {},
+                    sds: {},
+                    retail: {}
+                };
+                
+                for (let i = 1; i < excelData.length; i++) {
+                    const row = excelData[i];
+                    if (row && row[finalSubClusterCol] && row[finalUserRoleCol]) {
+                        const subCluster = row[finalSubClusterCol].toString().trim();
+                        const userRole = row[finalUserRoleCol].toString().trim();
+                        const customerMdn = finalCustomerMdnCol !== -1 && row[finalCustomerMdnCol] 
+                            ? row[finalCustomerMdnCol].toString().trim() 
+                            : '';
+                        
+                        // Initialize dashboard data for sub cluster if not exists
+                        if (!dashboardData[subCluster]) {
+                            dashboardData[subCluster] = {
+                                sgs: 0,
+                                sds: 0,
+                                retail: 0,
+                                total: 0
+                            };
+                        }
+                        
+                        // Categorize by user role and update counts
+                        if (userRole === 'SGS') {
+                            dashboardData[subCluster].sgs++;
+                            
+                            // Get data for SGS from PERFORMED USER LOGIN ID and PERFORMED USER NAME
+                            const nik = finalPerformedUserLoginIdCol !== -1 && row[finalPerformedUserLoginIdCol] 
+                                ? row[finalPerformedUserLoginIdCol].toString().trim() 
+                                : '';
+                            const nama = finalPerformedUserNameCol !== -1 && row[finalPerformedUserNameCol] 
+                                ? row[finalPerformedUserNameCol].toString().trim() 
+                                : 'Unknown';
+                            
+                            const userKey = `${nik}-${nama}`;
+                            if (!userData.sgs[userKey]) {
+                                userData.sgs[userKey] = {
+                                    subCluster: subCluster,
+                                    nik: nik,
+                                    nama: nama,
+                                    customerMdn: [],
+                                    total: 0
+                                };
+                            }
+                            
+                            if (customerMdn) {
+                                userData.sgs[userKey].customerMdn.push(customerMdn);
+                            }
+                            userData.sgs[userKey].total++;
+                            
+                        } else if (userRole === 'SDS') {
+                            dashboardData[subCluster].sds++;
+                            
+                            // Get data for SDS from PERFORMED USER LOGIN ID and PERFORMED USER NAME
+                            const nik = finalPerformedUserLoginIdCol !== -1 && row[finalPerformedUserLoginIdCol] 
+                                ? row[finalPerformedUserLoginIdCol].toString().trim() 
+                                : '';
+                            const nama = finalPerformedUserNameCol !== -1 && row[finalPerformedUserNameCol] 
+                                ? row[finalPerformedUserNameCol].toString().trim() 
+                                : 'Unknown';
+                            
+                            const userKey = `${nik}-${nama}`;
+                            if (!userData.sds[userKey]) {
+                                userData.sds[userKey] = {
+                                    subCluster: subCluster,
+                                    nik: nik,
+                                    nama: nama,
+                                    customerMdn: [],
+                                    total: 0
+                                };
+                            }
+                            
+                            if (customerMdn) {
+                                userData.sds[userKey].customerMdn.push(customerMdn);
+                            }
+                            userData.sds[userKey].total++;
+                            
+                        } else if (
+                            userRole.includes('Retailer') || 
+                            userRole.includes('Eload Recharge Holder') ||
+                            userRole.includes('Default User')
+                        ) {
+                            dashboardData[subCluster].retail++;
+                            
+                            // Get data for Retail from NIK SFA and NAMA SFA
+                            const nik = finalNikSfaCol !== -1 && row[finalNikSfaCol] 
+                                ? row[finalNikSfaCol].toString().trim() 
+                                : '';
+                            const nama = finalNamaSfaCol !== -1 && row[finalNamaSfaCol] 
+                                ? row[finalNamaSfaCol].toString().trim() 
+                                : 'Unknown';
+                            
+                            const userKey = `${nik}-${nama}`;
+                            if (!userData.retail[userKey]) {
+                                userData.retail[userKey] = {
+                                    subCluster: subCluster,
+                                    nik: nik,
+                                    nama: nama,
+                                    customerMdn: [],
+                                    performedUserLoginId: finalPerformedUserLoginIdCol !== -1 && row[finalPerformedUserLoginIdCol] 
+                                        ? row[finalPerformedUserLoginIdCol].toString().trim() 
+                                        : '',
+                                    performedUserName: finalPerformedUserNameCol !== -1 && row[finalPerformedUserNameCol] 
+                                        ? row[finalPerformedUserNameCol].toString().trim() 
+                                        : '',
+                                    total: 0
+                                };
+                            }
+                            
+                            if (customerMdn) {
+                                userData.retail[userKey].customerMdn.push(customerMdn);
+                            }
+                            userData.retail[userKey].total++;
+                        }
+                        
+                        dashboardData[subCluster].total++;
+                    }
+                }
+                
+                // Convert userData objects to arrays
+                activationDetailData.sgs = Object.values(userData.sgs);
+                activationDetailData.sds = Object.values(userData.sds);
+                activationDetailData.retail = Object.values(userData.retail);
+                
+                return {
+                    dashboard: dashboardData,
+                    activationDetail: activationDetailData
+                };
+            }
+            
+            // Add file to the file list
+            async function addToFileList(filename, fileData, cloudFile) {
+                const fileList = document.getElementById('file-list');
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('id-ID') + ', ' + now.toLocaleTimeString('id-ID');
+                
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div>
+                        <i class="fas fa-file-excel text-success me-2"></i>
+                        ${filename}
+                        ${cloudFile && cloudFile.source === 'cloud' ? '<i class="fas fa-cloud ms-1 text-primary" title="Tersimpan di Cloud"></i>' : '<i class="fas fa-laptop ms-1 text-warning" title="Tersimpan Lokal"></i>'}
+                    </div>
+                    <div class="text-muted d-flex align-items-center">
+                        Diunggah: ${dateStr}
+                        <div class="file-actions ms-2">
+                            <button class="btn btn-sm btn-outline-primary load-file-btn" data-filename="${filename}">
+                                <i class="fas fa-sync-alt"></i> Load
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-file-btn" data-filename="${filename}">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                fileList.appendChild(listItem);
+                
+                // Store file data for later use
+                uploadedFiles.push({ 
+                    name: filename, 
+                    date: dateStr, 
+                    data: fileData,
+                    source: cloudFile ? cloudFile.source : 'local'
+                });
+                
+                // Add event listeners for the new buttons
+                listItem.querySelector('.load-file-btn').addEventListener('click', function() {
+                    const filename = this.getAttribute('data-filename');
+                    loadFileData(filename);
+                });
+                
+                listItem.querySelector('.delete-file-btn').addEventListener('click', function() {
+                    const filename = this.getAttribute('data-filename');
+                    deleteFile(filename, listItem);
+                });
+            }
+            
+            // Render uploaded files list
+            async function renderUploadedFiles() {
+                const fileList = document.getElementById('file-list');
+                fileList.innerHTML = '';
+                
+                if (uploadedFiles.length === 0) {
+                    fileList.innerHTML = '<li class="text-muted">Belum ada file yang diunggah</li>';
+                    return;
+                }
+                
+                uploadedFiles.forEach(file => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <div>
+                            <i class="fas fa-file-excel text-success me-2"></i>
+                            ${file.name}
+                            ${file.source === 'cloud' ? '<i class="fas fa-cloud ms-1 text-primary" title="Tersimpan di Cloud"></i>' : '<i class="fas fa-laptop ms-1 text-warning" title="Tersimpan Lokal"></i>'}
+                        </div>
+                        <div class="text-muted d-flex align-items-center">
+                            Diunggah: ${file.date}
+                            <div class="file-actions ms-2">
+                                <button class="btn btn-sm btn-outline-primary load-file-btn" data-filename="${file.name}">
+                                    <i class="fas fa-sync-alt"></i> Load
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-filename="${file.name}">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    fileList.appendChild(listItem);
+                    
+                    // Add event listeners for the buttons
+                    listItem.querySelector('.load-file-btn').addEventListener('click', function() {
+                        const filename = this.getAttribute('data-filename');
+                        loadFileData(filename);
+                    });
+                    
+                    listItem.querySelector('.delete-file-btn').addEventListener('click', function() {
+                        const filename = this.getAttribute('data-filename');
+                        deleteFile(filename, listItem);
+                    });
+                });
+            }
+            
+            // Load file data to dashboard
+            async function loadFileData(filename) {
+                try {
+                    const fileData = await CloudStorage.loadFile(filename);
+                    
+                    if (fileData) {
+                        // Process the file data and update dashboard
+                        updateDashboardFromExcel(fileData.dashboard);
+                        updateActivationDetailFromExcel(fileData.activationDetail);
+                        showNotification(`Data dari ${filename} berhasil dimuat ke dashboard`, 'success');
+                        
+                        // Navigate to dashboard
+                        sidebarLinks.forEach(l => l.classList.remove('active'));
+                        document.querySelector('.sidebar a[data-page="dashboard"]').classList.add('active');
+                        pageSections.forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        document.getElementById('dashboard').classList.add('active');
+                    } else {
+                        showNotification(`File ${filename} tidak ditemukan`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error loading file:', error);
+                    showNotification('Error memuat file', 'error');
+                }
+            }
+            
+            // Delete file from list
+            async function deleteFile(filename, listItem) {
+                if (confirm(`Apakah Anda yakin ingin menghapus file ${filename}?`)) {
+                    try {
+                        const result = await CloudStorage.deleteFile(filename);
+                        
+                        if (result.success) {
+                            listItem.remove();
+                            uploadedFiles = uploadedFiles.filter(f => f.name !== filename);
+                            showNotification(`File ${filename} berhasil dihapus (${result.source})`, 'success');
+                            
+                            // Refresh file list if empty
+                            if (uploadedFiles.length === 0) {
+                                await renderUploadedFiles();
+                            }
+                        } else {
+                            showNotification('Gagal menghapus file', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting file:', error);
+                        showNotification('Error menghapus file', 'error');
+                    }
+                }
+            }
+            
+            // Update dashboard from Excel data
+            async function updateDashboardFromExcel(clusterData) {
+                if (!clusterData) return;
+                
+                // Update dashboard data with new counts
+                let totalSgs = 0;
+                let totalSds = 0;
+                let totalRetail = 0;
+                let totalActivation = 0;
+                
+                // Update each cluster with new data
+                dashboardData.forEach(cluster => {
+                    const clusterKey = cluster.cluster;
+                    if (clusterData[clusterKey]) {
+                        cluster.sgs = clusterData[clusterKey].sgs;
+                        cluster.sds = clusterData[clusterKey].sds;
+                        cluster.retail = clusterData[clusterKey].retail;
+                        cluster.total = clusterData[clusterKey].total;
+                        cluster.agh = ((cluster.total / cluster.target) * 100).toFixed(2) + '%';
+                        
+                        totalSgs += cluster.sgs;
+                        totalSds += cluster.sds;
+                        totalRetail += cluster.retail;
+                        totalActivation += cluster.total;
+                    }
+                });
+                
+                // Save to cloud
+                try {
+                    await CloudStorage.saveDashboardData(dashboardData);
+                } catch (error) {
+                    console.error('Error saving dashboard to cloud:', error);
+                    // Fallback to localStorage
+                    localStorage.setItem(STORAGE_KEYS.DASHBOARD_DATA, JSON.stringify(dashboardData));
+                }
+                
+                // Update totals
+                const totalTarget = dashboardData.reduce((sum, item) => sum + item.target, 0);
+                const achievement = ((totalActivation / totalTarget) * 100).toFixed(2);
+                
+                document.getElementById('total-activation').textContent = totalActivation.toLocaleString();
+                document.getElementById('achievement').textContent = achievement + '%';
+                document.getElementById('achievement-bar').style.width = achievement + '%';
+                document.getElementById('sgs-activation').textContent = totalSgs.toLocaleString();
+                
+                // Re-render dashboard table
+                renderDashboardTable();
+            }
+            
+            // Update activation detail from Excel data
+            function updateActivationDetailFromExcel(detailData) {
+                if (!detailData) return;
+                
+                // Update activation detail data
+                activationDetailData = detailData;
+                localStorage.setItem(STORAGE_KEYS.ACTIVATION_DETAIL, JSON.stringify(activationDetailData));
+                
+                // Update all sub clusters list
+                const allSubClustersSet = new Set();
+                
+                // From dashboard data
+                dashboardData.forEach(item => {
+                    allSubClustersSet.add(item.cluster);
+                });
+                
+                // From activation detail data
+                Object.values(activationDetailData).forEach(category => {
+                    category.forEach(item => {
+                        if (item.subCluster) {
+                            allSubClustersSet.add(item.subCluster);
+                        }
+                    });
+                });
+                
+                allSubClusters = Array.from(allSubClustersSet).sort();
+                
+                // Re-render activation detail table
+                renderActivationDetailTable();
+                
+                // Update filter options
+                populateSubClusterFilter();
+                
+                showNotification('Activation Detail berhasil diperbarui dengan data terbaru', 'success');
+            }
+            
+            // Show notification
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} notification notification-${type}`;
+                notification.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                        <span>${message}</span>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
